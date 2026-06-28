@@ -1,3 +1,4 @@
+use arboard::Clipboard;
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
     execute,
@@ -29,6 +30,7 @@ struct App {
     query: String,
     matcher: SkimMatcherV2,
     diff_scroll: u16,
+    status: String,
 }
 
 impl App {
@@ -38,7 +40,7 @@ impl App {
         if !filtered.is_empty() {
             list_state.select(Some(0));
         }
-        App { commits, filtered, list_state, query: String::new(), matcher: SkimMatcherV2::default(), diff_scroll: 0 }
+        App { commits, filtered, list_state, query: String::new(), matcher: SkimMatcherV2::default(), diff_scroll: 0, status: String::new() }
     }
 
     fn update_filter(&mut self) {
@@ -181,6 +183,19 @@ fn run_app(
                 KeyCode::Down => { app.move_down(); app.reset_diff_scroll(); }
                 KeyCode::Char(c) => { app.query.push(c); app.update_filter(); }
                 KeyCode::Backspace => { app.query.pop(); app.update_filter(); }
+                KeyCode::Enter => {
+                    if let Some(commit) = app.selected_commit() {
+                        let hash = commit.id.clone();
+
+
+                        let copied = copy_to_clipboard(&hash);
+                        app.status = if copied {
+                            format!("Copied: {}", hash)
+                        } else {
+                            "Failed to copy".to_string()
+                        };
+                    }
+                }
                 _ => {}
             }
         }
@@ -197,7 +212,11 @@ fn ui(f: &mut Frame, app: &mut App) {
 
     let left_chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
+        .constraints([
+            Constraint::Length(3),
+            Constraint::Length(1),
+            Constraint::Min(0),
+        ].as_ref())
         .split(main_chunks[0]);
 
     let search = Paragraph::new(format!(" {}_", app.query))
@@ -205,6 +224,15 @@ fn ui(f: &mut Frame, app: &mut App) {
             .title(" Search (type to filter, ESC to quit) ")
             .border_style(Style::default().fg(Color::Yellow)));
     f.render_widget(search, left_chunks[0]);
+
+    let status_text = if app.status.is_empty() {
+        " Enter — copy hash".to_string()
+    } else {
+        format!(" ✓ {}", app.status)
+    };
+    let status = Paragraph::new(status_text)
+        .style(Style::default().fg(if app.status.is_empty() { Color::DarkGray } else { Color::Green }));
+    f.render_widget(status, left_chunks[1]);
 
     let items: Vec<ListItem> = app.filtered.iter().map(|&i| {
         let c = &app.commits[i];
@@ -222,7 +250,7 @@ fn ui(f: &mut Frame, app: &mut App) {
         .highlight_style(Style::default().bg(Color::DarkGray).add_modifier(Modifier::BOLD))
         .highlight_symbol("▶ ");
 
-    f.render_stateful_widget(list, left_chunks[1], &mut app.list_state);
+    f.render_stateful_widget(list, left_chunks[2], &mut app.list_state);
 
     let diff_lines: Vec<Line> = if let Some(commit) = app.selected_commit() {
         let mut lines = vec![
@@ -275,4 +303,19 @@ fn truncate(s: &str, max: usize) -> String {
     } else {
         s.chars().take(max).collect()
     }
+}
+
+fn copy_to_clipboard(text: &str) -> bool {
+    if let Ok(mut child) = Command::new("clip.exe").stdin(std::process::Stdio::piped()).spawn() {
+        if let Some(stdin) = child.stdin.take() {
+            use std::io::Write;
+            let mut stdin = stdin;
+            let _ = stdin.write_all(text.as_bytes());
+        }
+        return child.wait().map(|s| s.success()).unwrap_or(false);
+    }
+    if let Ok(mut clipboard) = Clipboard::new() {
+        return clipboard.set_text(text.to_string()).is_ok();
+    }
+    false
 }
