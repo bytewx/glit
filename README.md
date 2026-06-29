@@ -26,6 +26,11 @@ Built with Rust + [ratatui](https://github.com/ratatui-org/ratatui).
 
 ## Installation
 
+### Without Rust (download binary)
+Go to [Releases](https://github.com/bytewx/glit/releases) and download
+the binary for your platform.
+
+### With Rust
 ```bash
 cargo install --git https://github.com/bytewx/glit
 ```
