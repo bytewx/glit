@@ -1,5 +1,7 @@
 # glit
 
+> **G**it **L**og **I**mproved **T**UI
+
 Interactive git log viewer with fuzzy search and diff preview - right in your terminal.
 
 Built with Rust + [ratatui](https://github.com/ratatui-org/ratatui).
@@ -10,8 +12,12 @@ Built with Rust + [ratatui](https://github.com/ratatui-org/ratatui).
 
 ## Features
 
+- Branch graph visualization (`git log --graph` style)
 - Fuzzy search through commit history in real time
+- Filter commits by author with `@name`
 - Instant diff preview with syntax highlighting
+- Colored authors - each contributor has a unique color
+- Branch indicator in diff panel
 - Copy commit hash to clipboard with one key
 - Scroll through long diffs without leaving the TUI
 - Keyboard-only navigation
@@ -36,6 +42,7 @@ glit
 
 | Key           | Action                        |
 |---------------|-------------------------------|
+| @name         | Filter commits by author      |
 | Type anything | Fuzzy search                  |
 | ↑ / ↓         | Navigate commits              |
 | PgUp / PgDn   | Scroll diff                   |
@@ -43,6 +50,14 @@ glit
 | ESC           | Quit                          |
 
 ## Changelog
+
+### v1.2
+- Branch graph visualization
+- Colored authors - unique color per contributor
+- Branch indicator `⎇` in diff panel
+- Author search via `@name`
+- Tab to switch focus between panels
+- `↑↓` now scroll diff when diff panel is focused
 
 ### v1.1
 - Copy commit hash to clipboard via `Enter`
