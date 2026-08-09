@@ -119,7 +119,9 @@ fn draw_changed_files(f: &mut Frame, app: &mut App, area: Rect) {
                 .title(" Changed files ")
                 .border_style(Style::default().fg(border_color));
             f.render_widget(
-                Paragraph::new("Loading…").style(Style::default().fg(Color::DarkGray)).block(block),
+                Paragraph::new("Loading…")
+                    .style(Style::default().fg(Color::DarkGray))
+                    .block(block),
                 area,
             );
         }
@@ -220,7 +222,11 @@ fn draw_blame(f: &mut Frame, app: &mut App, area: Rect) {
 
     let (commit_hash, file_path, selected_line) = {
         let bv = app.blame_view.as_ref().unwrap();
-        (bv.commit_hash.clone(), bv.file_path.clone(), bv.selected_line)
+        (
+            bv.commit_hash.clone(),
+            bv.file_path.clone(),
+            bv.selected_line,
+        )
     };
 
     let total_lines = match app.cache.blame_for(&commit_hash, &file_path) {
@@ -228,17 +234,17 @@ fn draw_blame(f: &mut Frame, app: &mut App, area: Rect) {
         _ => 0,
     };
 
-    if let Some(bv) = app.blame_view.as_mut() {
-        if inner_height > 0 {
-            if selected_line < bv.scroll_offset as usize {
-                bv.scroll_offset = selected_line as u16;
-            } else if selected_line >= bv.scroll_offset as usize + inner_height {
-                bv.scroll_offset = (selected_line + 1 - inner_height) as u16;
-            }
-            let max_offset = total_lines.saturating_sub(inner_height) as u16;
-            if bv.scroll_offset > max_offset {
-                bv.scroll_offset = max_offset;
-            }
+    if let Some(bv) = app.blame_view.as_mut()
+        && inner_height > 0
+    {
+        if selected_line < bv.scroll_offset as usize {
+            bv.scroll_offset = selected_line as u16;
+        } else if selected_line >= bv.scroll_offset as usize + inner_height {
+            bv.scroll_offset = (selected_line + 1 - inner_height) as u16;
+        }
+        let max_offset = total_lines.saturating_sub(inner_height) as u16;
+        if bv.scroll_offset > max_offset {
+            bv.scroll_offset = max_offset;
         }
     }
 
@@ -280,12 +286,17 @@ fn draw_blame(f: &mut Frame, app: &mut App, area: Rect) {
             .map(|(i, bl)| {
                 let is_selected = i == selected_line;
                 let base_style = if is_selected {
-                    Style::default().bg(Color::DarkGray).add_modifier(Modifier::BOLD)
+                    Style::default()
+                        .bg(Color::DarkGray)
+                        .add_modifier(Modifier::BOLD)
                 } else {
                     Style::default()
                 };
                 Line::from(vec![
-                    Span::styled(format!("{:>5} ", bl.line_no), base_style.fg(Color::DarkGray)),
+                    Span::styled(
+                        format!("{:>5} ", bl.line_no),
+                        base_style.fg(Color::DarkGray),
+                    ),
                     Span::styled(format!("{} ", bl.short_hash), base_style.fg(Color::Yellow)),
                     Span::styled(
                         format!("{:<12} ", truncate(&bl.author, 12)),
@@ -329,7 +340,7 @@ fn civil_from_days(z: i64) -> (i64, u32, u32) {
     (y, m, d)
 }
 
-fn build_diff_lines(app: &App) -> Vec<Line> {
+fn build_diff_lines(app: &App) -> Vec<Line<'_>> {
     let Some(commit) = app.selected_commit() else {
         return vec![Line::from("No commit selected")];
     };
@@ -352,6 +363,10 @@ fn build_diff_lines(app: &App) -> Vec<Line> {
                 Style::default()
                     .fg(author_color(&commit.author))
                     .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(
+                format!(" <{}>", commit.author_email),
+                Style::default().fg(Color::DarkGray),
             ),
         ]),
         Line::from(vec![

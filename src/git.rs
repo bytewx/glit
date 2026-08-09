@@ -108,7 +108,7 @@ fn is_graph_char(ch: char) -> bool {
         || ('\u{2500}'..='\u{257F}').contains(&ch) // box-drawing unicode
 }
 
-pub fn get_diff(hash: &str) -> Result<String, AppError> {
+pub fn get_diff(hash: &str, max_chars: usize) -> Result<String, AppError> {
     let output = Command::new("git")
         .args(["show", "--stat", "-p", "--no-color", hash])
         .output()
@@ -120,9 +120,8 @@ pub fn get_diff(hash: &str) -> Result<String, AppError> {
     }
 
     let mut s = String::from_utf8_lossy(&output.stdout).to_string();
-    const MAX_CHARS: usize = 8000;
-    if s.chars().count() > MAX_CHARS {
-        s = s.chars().take(MAX_CHARS).collect();
+    if s.chars().count() > max_chars {
+        s = s.chars().take(max_chars).collect();
         s.push_str("\n... (diff truncated)");
     }
     Ok(s)
@@ -187,11 +186,7 @@ pub fn parse_changed_files(raw: &str) -> Vec<ChangedFile> {
             break;
         }
         let meta = tokens.pop_front().unwrap();
-        let status = meta
-            .split_whitespace()
-            .last()
-            .unwrap_or("")
-            .to_string();
+        let status = meta.split_whitespace().last().unwrap_or("").to_string();
         let is_rename_or_copy = status.starts_with('R') || status.starts_with('C');
         let path = if is_rename_or_copy {
             let _old_path = tokens.pop_front().unwrap_or("");
@@ -482,7 +477,9 @@ mod tests {
     fn test_parse_blame_multiple_lines_same_group() {
         let hash = "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3";
         let mut raw = blame_block(hash, 1, 1, Some(2), "Bob", 1600000000, "line one");
-        raw.push_str(&blame_block(hash, 2, 2, None, "Bob", 1600000000, "line two"));
+        raw.push_str(&blame_block(
+            hash, 2, 2, None, "Bob", 1600000000, "line two",
+        ));
         let lines = parse_blame(&raw);
         assert_eq!(lines.len(), 2);
         assert_eq!(lines[0].content, "line one");

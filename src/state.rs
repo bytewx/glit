@@ -114,6 +114,7 @@ pub struct BlameView {
 pub struct App {
     pub commits: Vec<Commit>,
     pub filtered: Vec<usize>,
+    pub diff_char_limit: usize,
     pub list_state: ListState,
     pub files_list_state: ListState,
     pub query: String,
@@ -128,7 +129,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(commits: Vec<Commit>) -> Self {
+    pub fn new(commits: Vec<Commit>, diff_char_limit: usize) -> Self {
         let filtered: Vec<usize> = (0..commits.len()).collect();
         let mut list_state = ListState::default();
         if !filtered.is_empty() {
@@ -140,6 +141,7 @@ impl App {
         App {
             commits,
             filtered,
+            diff_char_limit,
             list_state,
             files_list_state,
             query: String::new(),
@@ -198,20 +200,20 @@ impl App {
     }
 
     pub fn move_up(&mut self) {
-        if let Some(sel) = self.list_state.selected() {
-            if sel > 0 {
-                self.list_state.select(Some(sel - 1));
-            }
+        if let Some(sel) = self.list_state.selected()
+            && sel > 0
+        {
+            self.list_state.select(Some(sel - 1));
         }
         self.diff_scroll = 0;
         self.on_commit_changed();
     }
 
     pub fn move_down(&mut self) {
-        if let Some(sel) = self.list_state.selected() {
-            if sel + 1 < self.filtered.len() {
-                self.list_state.select(Some(sel + 1));
-            }
+        if let Some(sel) = self.list_state.selected()
+            && sel + 1 < self.filtered.len()
+        {
+            self.list_state.select(Some(sel + 1));
         }
         self.diff_scroll = 0;
         self.on_commit_changed();
@@ -297,18 +299,19 @@ impl App {
 
     pub fn blame_move_down(&mut self) {
         let total = self.blame_line_count();
-        if let Some(bv) = &mut self.blame_view {
-            if total > 0 && bv.selected_line + 1 < total {
-                bv.selected_line += 1;
-            }
+        if let Some(bv) = &mut self.blame_view
+            && total > 0
+            && bv.selected_line + 1 < total
+        {
+            bv.selected_line += 1;
         }
     }
 
     pub fn blame_move_up(&mut self) {
-        if let Some(bv) = &mut self.blame_view {
-            if bv.selected_line > 0 {
-                bv.selected_line -= 1;
-            }
+        if let Some(bv) = &mut self.blame_view
+            && bv.selected_line > 0
+        {
+            bv.selected_line -= 1;
         }
     }
 }

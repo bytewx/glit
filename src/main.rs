@@ -39,7 +39,7 @@ fn run() -> Result<(), AppError> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend).map_err(|e| AppError::Terminal(e.to_string()))?;
 
-    let mut app = App::new(commits);
+    let mut app = App::new(commits, cfg.diff_char_limit);
 
     trigger_load(&mut app);
 
@@ -64,8 +64,9 @@ fn trigger_load(app: &mut App) {
         app.cache.insert_diff(hash.clone(), DiffState::Loading);
         let tx = app.tx.clone();
         let h = hash.clone();
+        let limit = app.diff_char_limit;
         std::thread::spawn(move || {
-            let result = git::get_diff(&h).map_err(|e| e.to_string());
+            let result = git::get_diff(&h, limit).map_err(|e| e.to_string());
             let _ = tx.send(LoadMsg::Diff { hash: h, result });
         });
     }
@@ -228,9 +229,10 @@ fn run_app(
                         'j' => app.move_file_down(),
                         'k' => app.move_file_up(),
                         'b' => {
-                            if let (Some(hash), Some(path)) =
-                                (app.selected_hash(), app.selected_changed_file().map(|f| f.path.clone()))
-                            {
+                            if let (Some(hash), Some(path)) = (
+                                app.selected_hash(),
+                                app.selected_changed_file().map(|f| f.path.clone()),
+                            ) {
                                 app.open_blame(hash.clone(), path.clone());
                                 trigger_blame_load(app, &hash, &path);
                             }
