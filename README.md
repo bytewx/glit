@@ -1,5 +1,7 @@
 # glit
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 > **G**it **L**og **I**mproved **T**UI
 
 Interactive git log viewer with fuzzy search and diff preview - right in your terminal.

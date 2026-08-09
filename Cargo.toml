@@ -5,6 +5,7 @@ edition = "2024"
 description = "Interactive git log viewer with fuzzy search and diff preview"
 authors = ["Timur Satymbayev <satymbayevt@gmail.com>"]
 repository = "https://github.com/bytewx/glit"
+license = "MIT"
 keywords = ["git", "tui", "cli", "log"]
 categories = ["command-line-utilities", "development-tools"]
 
