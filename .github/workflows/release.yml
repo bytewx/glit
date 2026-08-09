@@ -58,9 +58,21 @@ jobs:
           Copy-Item "target/${{ matrix.target }}/release/${{ matrix.binary }}" .
           Compress-Archive -Path ${{ matrix.binary }}, README.md -DestinationPath ${{ matrix.archive }}
 
-      - name: Upload to Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ${{ matrix.archive }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          - name: Checksum (Linux/macOS)
+            if: matrix.os != 'windows-latest'
+            run: shasum -a 256 ${{ matrix.archive }} > ${{ matrix.archive }}.sha256
+
+          - name: Checksum (Windows)
+            if: matrix.os == 'windows-latest'
+            run: |
+              $hash = (Get-FileHash ${{ matrix.archive }} -Algorithm SHA256).Hash.ToLower()
+              "$hash  ${{ matrix.archive }}" | Out-File -Encoding ascii ${{ matrix.archive }}.sha256
+
+          - name: Upload to Release
+            uses: softprops/action-gh-release@v1
+            with:
+              files: |
+                ${{ matrix.archive }}
+                ${{ matrix.archive }}.sha256
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
