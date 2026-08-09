@@ -1,6 +1,6 @@
 [package]
 name = "glit"
-version = "1.3.0"
+version = "1.3.1"
 edition = "2024"
 description = "Interactive git log viewer with fuzzy search and diff preview"
 authors = ["Timur Satymbayev <satymbayevt@gmail.com>"]
