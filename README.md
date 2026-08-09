@@ -53,8 +53,14 @@ glit
 | PgUp / PgDn   | Scroll diff                   |
 | Enter         | Copy commit hash to clipboard |
 | ESC           | Quit                          |
+| b             | Blame selected file (in Files panel) |
 
 ## Changelog
+
+### v1.3
+- File blame view - press `b` on a changed file to see line-by-line blame
+- Navigate blame lines with `j`/`k` or `↑`/`↓`
+- `Esc` to close blame and return to diff
 
 ### v1.2
 - Branch graph visualization
