@@ -37,6 +37,11 @@ the binary for your platform.
 cargo install --git https://github.com/bytewx/glit
 ```
 
+### With Cargo (from crates.io)
+```bash
+cargo install glit-tui
+```
+
 ## Usage
 
 Run inside any git repository:

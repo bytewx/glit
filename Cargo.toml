@@ -1,5 +1,5 @@
 [package]
-name = "glit"
+name = "glit-tui"
 version = "1.3.1"
 edition = "2024"
 description = "Interactive git log viewer with fuzzy search and diff preview"
@@ -14,3 +14,7 @@ crossterm = "0.29.0"
 fuzzy-matcher = "0.3.7"
 ratatui = "0.30.2"
 arboard = "3"
+
+[[bin]]
+name = "glit"
+path = "src/main.rs"
