@@ -95,3 +95,7 @@ glit
 - [ratatui](https://github.com/ratatui-org/ratatui) - TUI framework
 - [fuzzy-matcher](https://github.com/lotabout/fuzzy-matcher) - Fuzzy search
 - [arboard](https://github.com/1Password/arboard) - Clipboard support
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to build, test, and submit changes.
